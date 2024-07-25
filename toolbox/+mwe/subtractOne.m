@@ -5,8 +5,14 @@ function y = subtractOne(x)
 %   See also MWE.ADDONE.
 
     arguments
-        x (1, 1) {mustBeNumeric}
+        x (:, :) {mustBeNumeric}
     end
 
-    y = x - 1;
+    if max(size(x)) > 1
+        % Use the efficient mex version when handling matrices (not really
+        % faster than MATLAB's builtin).
+        y = mexMatrixSubtractOne(x);
+    else
+        y = x - 1;
+    end
 end

@@ -5,8 +5,14 @@ function y = addOne(x)
 %   See also MWE.SUBTRACTONE.
 
     arguments
-        x (1, 1) {mustBeNumeric}
+        x (:, :) {mustBeNumeric}
     end
 
-    y = x + 1;
+    if max(size(x)) > 1
+        % Use the efficient mex version when handling matrices (not really
+        % faster than MATLAB's builtin).
+        y = mexMatrixAddOne(x);
+    else
+        y = x + 1;
+    end
 end

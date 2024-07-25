@@ -9,3 +9,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add basic toolbox structure.
 - Add tests.
+- Add mex versions of adding and subtracting one. Set up cmake to build and test these.
