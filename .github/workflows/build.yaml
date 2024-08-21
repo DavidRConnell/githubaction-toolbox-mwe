@@ -1,0 +1,195 @@
+name: Build
+
+on:
+  - workflow_call
+
+jobs:
+  build-linux:
+    name: Build Linux toolbox
+    runs-on: ubuntu-20.04
+    env:
+      CC: gcc-10
+      CXX: g++-10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt upgrade
+          sudo apt install cmake ninja-build gcc-10 g++-10 libxml2-dev libbison-dev libfl-dev
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Build toolbox
+        run: |
+          cmake -B build . -G Ninja \
+            -DCMAKE_PACKAGE_VERSION="${{ github.ref_name }}"
+          cmake --build build
+
+      - name: Run tests and generate artifacts
+        continue-on-error: true
+        run: |
+          cd build
+          ctest --test-dir . --output-on-failure --parallel $(nproc)
+
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        with:
+          files: build/tests/test_*.xml
+
+      - name: Package dist
+        run: |
+          cmake --build build --target package
+
+      - name: Package source
+        run: cmake --build build --target package_source
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwe-${{ runner.os }}-${{ github.sha }}
+          path: build/mwe-toolbox_*.tar.gz
+
+  build-windows:
+    name: Build Windows toolbox
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell:  msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install packages
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ucrt64
+          install: >-
+            git
+            base-devel
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-libxml2
+          update: true
+          location: D:\
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Build toolbox
+        run: |
+          cmake -B build . \
+            -G Ninja \
+            -DIGRAPH_OPENMP_SUPPORT=ON \
+            -DCMAKE_PACKAGE_VERSION="${{ github.ref_name }}"
+          cmake --build build
+
+      - name: Run tests and generate artifacts
+        continue-on-error: true
+        run: |
+          cd build
+          ctest --test-dir . --output-on-failure --parallel $(nproc)
+
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        with:
+          files: build/tests/test_*.xml
+
+      - name: Package dist
+        run: cmake --build build --target package
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwe-toolbox-${{ runner.os }}-${{ github.sha }}
+          path: build/mwe-toolbox_*.zip
+
+  build-macos:
+    name: Build macOS toolbox
+    runs-on: macos-latest
+    env:
+      LLVM_VERSION: "14.0.5"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: brew install ninja autoconf automake libtool
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Build toolbox
+        run: |
+          cmake -B build . -G Ninja \
+            -DCMAKE_PACKAGE_VERSION="${{ github.ref_name }}"
+          cmake --build build
+
+      - name: Run tests and generate artifacts
+        continue-on-error: true
+        run: |
+          cd build
+          ctest --test-dir . --output-on-failure --parallel $(sysctl -n hw.ncpu)
+
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        with:
+          files: build/tests/test_*.xml
+
+      - name: Package dist
+        run: cmake --build build --target package
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwe-toolbox-${{ runner.os }}-${{ github.sha }}
+          path: build/mwe-toolbox_*.tar.gz
+
+  release:
+    name: Release new version
+    runs-on: ubuntu-latest
+    needs: [ build-linux, build-windows, build-macos ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect OS specific toolboxes
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Extract files
+        run: |
+          mkdir release
+          mv artifacts/mwe-toolbox-Linux-${{ github.sha }}/*_source.tar.gz release
+          cd artifacts
+          tar xf mwe-toolbox-Linux-${{ github.sha }}/* --directory mwe-toolbox-Linux-${{ github.sha }}
+          tar xf mwe-toolbox-macOS-${{ github.sha }}/* --directory mwe-toolbox-macOS-${{ github.sha }}
+          unzip mwe-toolbox-Windows-${{ github.sha }}/* -d mwe-toolbox-Windows-${{ github.sha }}
+          cd ..
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Make toolboxes
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(".github/workflows"), buildAllToolboxes("artifacts", "release", "${{ github.ref_name }}")
+
+      - name: Upload assets to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*

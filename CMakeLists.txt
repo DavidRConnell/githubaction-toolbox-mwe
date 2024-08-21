@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
 project(
-  matlab-igraph
+  mwe-toolbox
   DESCRIPTION "A Minimum working example of a MATLAB toolbox using github actions."
   LANGUAGES C
 )
