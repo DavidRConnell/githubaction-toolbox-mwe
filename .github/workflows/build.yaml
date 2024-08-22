@@ -206,7 +206,9 @@ jobs:
       - name: Make toolboxes
         uses: matlab-actions/run-command@v2
         with:
-          command: addpath(".github/workflows"), buildAllToolboxes("artifacts", "release", "${{ github.ref_name }}")
+          command: |
+            addpath(".github/workflows");
+            buildAllToolboxes("artifacts", "release", "${{ github.ref_name }}");
 
       - name: Upload assets to release
         uses: softprops/action-gh-release@v1
