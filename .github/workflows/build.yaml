@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CC: gcc-10
-      CXX: g++-10
 
     steps:
       - uses: actions/checkout@v4
@@ -35,13 +34,23 @@ jobs:
         run: |
           cmake --install build
 
-      - name: Run tests using matlab actions
+      - name: Run tests using matlab actions run-tests
         continue-on-error: true
         uses: matlab-actions/run-tests@v2
         with:
           source-folder: dist/mwe/toolbox
           select-by-folder: tests
           test-results-junit: test-results/results.xml
+
+      - name: Run tests using matlab actions run-command
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            addpath("dist/mwe/toolbox");
+            disp(runtests("tests"));
+
+      - name: Cleanup installed files
+        run: rm -rf dist
 
       - name: Run tests using cmake
         continue-on-error: true
@@ -195,7 +204,7 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
 
       - name: Make toolboxes
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: addpath(".github/workflows"), buildAllToolboxes("artifacts", "release", "${{ github.ref_name }}")
 
