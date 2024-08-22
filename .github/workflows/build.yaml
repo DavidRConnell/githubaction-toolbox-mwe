@@ -20,18 +20,30 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt upgrade
-          sudo apt install cmake ninja-build gcc-10 g++-10 libxml2-dev libbison-dev libfl-dev
+          sudo apt install cmake ninja-build gcc-10
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
 
       - name: Build toolbox
         run: |
-          cmake -B build . -G Ninja \
+          cmake -B build . -G Ninja --install-prefix ${GITHUB_WORKSPACE}/dist\
             -DCMAKE_PACKAGE_VERSION="${{ github.ref_name }}"
           cmake --build build
 
-      - name: Run tests and generate artifacts
+      - name: Install toolbox
+        run: |
+          cmake --install build
+
+      - name: Run tests using matlab actions
+        continue-on-error: true
+        uses: matlab-actions/run-tests@v2
+        with:
+          source-folder: dist/mwe/toolbox
+          select-by-folder: tests
+          test-results-junit: test-results/results.xml
+
+      - name: Run tests using cmake
         continue-on-error: true
         run: |
           cd build
@@ -43,8 +55,7 @@ jobs:
           files: build/tests/test_*.xml
 
       - name: Package dist
-        run: |
-          cmake --build build --target package
+        run: cmake --build build --target package
 
       - name: Package source
         run: cmake --build build --target package_source
@@ -52,7 +63,7 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
-          name: mwe-${{ runner.os }}-${{ github.sha }}
+          name: mwe-toolbox-${{ runner.os }}-${{ github.sha }}
           path: build/mwe-toolbox_*.tar.gz
 
   build-windows:
@@ -79,7 +90,6 @@ jobs:
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-toolchain
-            mingw-w64-ucrt-x86_64-libxml2
           update: true
           location: D:\
 
@@ -127,7 +137,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install dependencies
-        run: brew install ninja autoconf automake libtool
+        run: brew install ninja
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2

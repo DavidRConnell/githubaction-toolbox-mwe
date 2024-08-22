@@ -1,11 +1,10 @@
 function buildAllToolboxes(artifactsDir, outDir, version)
-    tmpDir = "tmp/matlab-igraph";
-    compiledFileDirs = {"+igraph/private"};
-    for d = dir(artifactsDir + "/matlab-igraph*")'
-        toolboxDir = fullfile(artifactsDir, d(1).name, ...
-                              "matlab-igraph", "toolbox");
+    tmpDir = "tmp/mwe";
+    compiledFileDirs = {"+mwe/private"};
+    for d = dir(artifactsDir + "/mwe*")'
+        toolboxDir = fullfile(artifactsDir, d(1).name, "mwe", "toolbox");
         zipFile = dir(fullfile(artifactsDir, d(1).name, ...
-                               "matlab-igraph_" + version + "*"));
+                               "mwe-toolbox_" + version + "*"));
         arch = regexp(zipFile.name, version + '_(.*)-toolbox', "tokens");
 
         if ~exist(tmpDir, 'dir')

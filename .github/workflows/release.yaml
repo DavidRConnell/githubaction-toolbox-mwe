@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - devel
+      - master
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
@@ -11,20 +12,22 @@ permissions:
   checks: write
   contents: write
   pull-requests: write
+  pages: write
+  id-token: write
 
 jobs:
   build-toolbox:
     uses: ./.github/workflows/build.yaml
 
-  # TODO
-  # publish-docs:
-  #   if: ${{ github.ref_type == 'tag' }}
-  #   uses: ./.github/workflows/publish.yaml
+  publish-docs:
+    # if: ${{ github.ref_type == 'tag' }}
+    needs: build-toolbox
+    uses: ./.github/workflows/publish.yaml
 
-  # TODO
-  # build-site:
-  #   if: ${{ github.ref_type == 'tag' }}
-  #   uses: ./.github/workflows/hugo.yaml
+  deploy-site:
+    # if: ${{ github.ref_type == 'tag' }}
+    needs: publish-docs
+    uses: ./.github/workflows/hugo.yaml
 
   release:
     name: Release new packages

@@ -8,3 +8,7 @@ function testTask(~)
     runtests("tests");
     path(oldPath);
 end
+
+function makeDocsTask(~)
+    export("toolbox/GettingStarted.mlx", "docs/content/start/_index.md");
+end

@@ -13,5 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tests.
 - Add mex versions of adding and subtracting one. Set up cmake to build and test these.
 - Add workflows
+- Added docs and publishing matlab livescripts
 
 ## [Pre] (Temporarily for generating initial release notes)

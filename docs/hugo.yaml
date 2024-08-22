@@ -1,0 +1,32 @@
+baseURL: 'https://davidrconnell.github.io/githubaction-toolbox-mwe'
+languageCode: 'en-us'
+title: 'Minimum Working Example MATLAB toolbox'
+theme: 'hextra'
+
+menu:
+  main:
+    - name: Getting Started
+      pageRef: /start
+      weight: 1
+    - name: Documentation
+      pageRef: /docs
+      weight: 2
+    - name: Changelog
+      pageRef: /changelog
+      weight: 5
+    - name: Search
+      weight: 98
+      params:
+        type: search
+    - name: Github
+      weight: 99
+      url: "https://github.com/davidrconnell/githubaction-toolbox-mwe"
+      params:
+        icon: github
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false

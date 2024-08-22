@@ -1,0 +1,47 @@
+name: Publish docs
+
+on:
+  - workflow_call
+
+jobs:
+  publish:
+    name: Publish docs
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Collect package
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Install toolbox
+        uses: matlab-actions/run-command@v1
+        with:
+          command: |
+            toolboxes = dir("*.tlbx");
+            tlbx = fullfile(toolboxes(1).folder, toolboxes(1).name);
+            matlab.addons.toolbox.installToolbox(tlbx);
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Add Changelog
+        run: |
+          [ -d docs/content/changelog ] || mkdir -p docs/content/changelog
+          cp CHANGELOG.md docs/content/changelog/_index.md
+
+      - name: Run make docs task
+        uses: matlab-actions/run-build@v2
+        with:
+          tasks: makedocs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwe-docs-${{ github.sha }}
+          path: ./docs

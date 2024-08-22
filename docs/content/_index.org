@@ -1,0 +1,3 @@
+#+TITLE: MWE toolbox
+
+A simple toolbox to demonstrate using ~cmake~ and github actions to deploy MATLAB toolboxes.

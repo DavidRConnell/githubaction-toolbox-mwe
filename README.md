@@ -4,11 +4,11 @@ A minimal toolbox to demonstrate use of Github Actions and recent MATLAB tools t
 
 This repository aims to demonstrate:
 
-- [ ] Testing code on multiple OSes using Github Actions.
-- [ ] Exporting livescripts as HTML to be used in online documentation.
-- [ ] Publishing online documentation using Github Pages and hugo.
+- [x] Testing code on multiple OSes using Github Actions.
+- [x] Exporting livescripts as HTML to be used in online documentation.
+- [x] Publishing online documentation using Github Pages and hugo.
 - [x] Building mex files using cmake.
-- [ ] Compiling toolboxes into the mltbx format.
+- [x] Compiling toolboxes into the mltbx format.
 - [ ] Automating release of toolboxes built by Github Actions to the file exchange.
 
 ## Working with the toolbox
