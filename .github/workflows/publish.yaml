@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - name: Collect package
+      - name: Download package
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: mwe-toolbox-${{ github.sha }}
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
@@ -21,7 +21,7 @@ jobs:
         uses: matlab-actions/run-command@v1
         with:
           command: |
-            toolboxes = dir("*.tlbx");
+            toolboxes = dir("*.mltbx");
             tlbx = fullfile(toolboxes(1).folder, toolboxes(1).name);
             matlab.addons.toolbox.installToolbox(tlbx);
 
@@ -38,7 +38,7 @@ jobs:
       - name: Run make docs task
         uses: matlab-actions/run-build@v2
         with:
-          tasks: makedocs
+          tasks: makeDocs
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -10,5 +10,9 @@ function testTask(~)
 end
 
 function makeDocsTask(~)
+    if ~exist("docs/content/start", "dir")
+        mkdir("docs/content/start");
+    end
+
     export("toolbox/GettingStarted.mlx", "docs/content/start/_index.md");
 end

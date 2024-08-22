@@ -41,6 +41,7 @@ jobs:
       - name: Collect package
         uses: actions/download-artifact@v4
         with:
+          name: mwe-toolbox-${{ github.sha }}
           path: artifacts
 
       - name: Copy toolbox and source tarball

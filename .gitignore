@@ -1,5 +1,7 @@
-docs/public/
 build/
 dist/
 *.o
 *.mexa64
+docs/public/
+docs/content/start/
+docs/content/examples/
