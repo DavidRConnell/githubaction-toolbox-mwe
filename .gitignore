@@ -3,5 +3,6 @@ dist/
 *.o
 *.mexa64
 docs/public/
+docs/content/changelog/
 docs/content/start/
 docs/content/examples/

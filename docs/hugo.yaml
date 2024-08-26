@@ -8,9 +8,6 @@ menu:
     - name: Getting Started
       pageRef: /start
       weight: 1
-    - name: Documentation
-      pageRef: /docs
-      weight: 2
     - name: Changelog
       pageRef: /changelog
       weight: 5
