@@ -124,8 +124,59 @@ jobs:
           name: mwe-toolbox-${{ runner.os }}-${{ github.sha }}
           path: build/mwe-toolbox_*.zip
 
-  build-macos:
-    name: Build macOS toolbox
+  build-intel-macos:
+    name: Build intel macOS toolbox
+    runs-on: macos-13
+    env:
+      LLVM_VERSION: "14.0.5"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: brew install ninja
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+
+      - name: Build toolbox
+        run: |
+          cmake -B build . -G Ninja \
+            --install-prefix=${GITHUB_WORKSPACE}/dist \
+            -DCMAKE_PACKAGE_VERSION="${{ github.ref_name }}"
+          cmake --build build
+          cmake --install build
+
+      - name: Run tests
+        continue-on-error: true
+        uses: matlab-actions/run-tests@v2
+        with:
+          source-folder: dist/mwe/toolbox
+          select-by-folder: tests
+          test-results-junit: test-results/results.xml
+
+      - name: Cleanup installed files
+        run: rm -rf dist
+
+      - name: Upload test results
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        with:
+          files: test-results/results.xml
+
+      - name: Package dist
+        run: cmake --build build --target package
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwe-toolbox-${{ runner.os }}-${{ github.sha }}
+          path: build/mwe-toolbox_*.tar.gz
+
+  build-m1-macos:
+    name: Build arm64 macOS toolbox
     runs-on: macos-latest
     env:
       LLVM_VERSION: "14.0.5"
